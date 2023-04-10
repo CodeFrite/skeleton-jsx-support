@@ -18,7 +18,11 @@ const transpileJSX = (type:string,props,...children:Array<HTMLElement>) => {
   // add props
   if (props){
     for (let key in props){
-      elem.setAttribute(key,props[key]);
+      if (key.substring(0,2) !== "on"){
+        elem.setAttribute(key,props[key]);
+      } else {  
+        elem.addEventListener(key.substring(2),props[key]);
+      }
     }
   }
 
@@ -26,10 +30,16 @@ const transpileJSX = (type:string,props,...children:Array<HTMLElement>) => {
   appendChild(elem,children);
   return elem;
 }
+
+const handleOnMouseMove = e => {
+  console.log("mouse move");
+};
+
+let title=<h1 id="title">Hello, World!</h1>;
 let article=<div id="Article">
-  <h1 id="title">Hello, World!</h1>
+  <h1 id="title">{title}</h1>
   <h2 id="author">codefrite</h2>
-  <div id="text">
+  <div id="text" onmousemove={handleOnMouseMove}>
     Lorem ipsum dolor sit, amet consectetur adipisicing elit. Voluptate, dolores est mollitia ad praesentium vero. Quidem quos eligendi officiis numquam dicta! Natus tenetur, possimus quia doloribus consequuntur cum ullam facilis?
   </div>
   <a href="https://www.google.com"></a>

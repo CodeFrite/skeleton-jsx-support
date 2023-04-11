@@ -1,49 +1,10 @@
-import LabeledButton from "./src/LabeledButton";
-
+import { LabeledButton, DialogBox } from "./src/components";
+import { transpileJSX } from "./src/jsx-pragma";
 /** @jsx transpileJSX */
-const add = (parent, child) => {
-  parent.appendChild(child?.nodeType ? child : document.createTextNode(child));
-};
-
-const appendChild = (parent, child) => {
-  if (Array.isArray(child)) {
-    child.forEach((nestedChild) => appendChild(parent, nestedChild));
-  } else {
-    add(parent, child);
-  }
-};
-
-const transpileJSX = (type:string,props,...children:Array<HTMLElement>) => {
-  console.log(type,props,children);
-  console.log(typeof(type));
-  let elem:any;
-  if (typeof(type)==='function'){
-    elem = new LabeledButton(props);
-    return elem.render();
-  } else {
-    elem = document.createElement(type);
-  }
-
-  // add props
-  if (props){
-    for (let key in props){
-      if (key.substring(0,2) !== "on"){
-        elem.setAttribute(key,props[key]);
-      } else {  
-        elem.addEventListener(key.substring(2),props[key]);
-      }
-    }
-  }
-
-  // add children
-  appendChild(elem,children);
-  return elem;
-}
 
 const handleOnMouseMove = e => {
   console.log("mouse move");
 };
-
 let title=<h1 id="title">Hello, World!</h1>;
 let article=<div id="Article">
   <h1 id="title">{title}</h1>
@@ -57,3 +18,6 @@ document.body.appendChild(article);
 
 let lbutton=<LabeledButton id="button1" label="Click Me" onClick={e => console.log("clicked")}/>;
 document.body.appendChild(lbutton);
+
+let dialogBox = <DialogBox id="dialogBox1" title="Dialog Box" prompt="Are you sure?" onYes={console.log} onNo={console.log}/>;
+document.body.appendChild(dialogBox);

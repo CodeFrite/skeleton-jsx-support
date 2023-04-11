@@ -6,8 +6,13 @@
 
 ```
 + app
-|+ public
-|+ src
+|📂 dist
+|📂 public
+|⎿ index.html
+|⎿ index.css
+|📂 src
+|⎿ jsx-pragma.tsx
+|⎿ components.tsx
 |- package.json
 |- webpack.config.json
 |- tsconfig.json
@@ -18,7 +23,7 @@
 > npm init
 > npm i -D typescript
 > npm i -D webpack webpack-cli webpack-dev-server
-> npm i -D @babel @babel/core @babel/plugin-transform-react-jsx @babel/preset-env "@babel/preset-typescript babel-loader
+> npm i -D @babel/cli @babel/core @babel/preset-env "@babel/preset-typescript @babel/preset-react babel-loader
 > npm i -D copy-webpack-plugin html-webpack-plugin
 ```
 
@@ -29,26 +34,27 @@ tsc --init
 > cat tsconfig.json
 {
   "compilerOptions": {
-    "target": "ES6",  
+    "target": "ES6",
     "module": "ES6",
     "moduleResolution": "node",
     "outDir": "dist",
     "sourceMap": true,
-    "jsx": "preserve",
+    "jsx": "preserve",  --> tsc will not transform jsx and let webpack/babel take care of it
   }
 }
 ```
 
 ### Step 1.4: Configure Webpack
 ```
-const path = require('path');
+const path  = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const { transpileJSX } = require('./src/jsx-pragma');
 
 module.exports = {
   entry: './index.tsx',
-  mode: "development",
-  devtool: "inline-source-map",
+  mode: 'development',
+  devtool: 'inline-source-map',
   module: {
     rules: [
       {
@@ -59,18 +65,14 @@ module.exports = {
             loader: 'babel-loader',
             options: {
               presets: [
+                '@babel/preset-typescript',  --> replaces ts-loader
                 '@babel/preset-env',
-              ],
-              plugins: [
-                '@babel/plugin-transform-react-jsx',
-              ],
+                '@babel/preset-react'        --> takes care of jsx transpilation
+              ]
             },
-          },
-          {
-            loader: 'ts-loader',
-          },
+          }
         ],
-      },
+      }
     ],
   },
   resolve: {
@@ -100,11 +102,11 @@ module.exports = {
     })
   ]
 }
+
 ```
 
 ### 1.5: Define custom Babel JSX pragma
 ```
-/** @jsx transpileJSX */
 const add = (parent, child) => {
   parent.appendChild(child?.nodeType ? child : document.createTextNode(child));
 };
@@ -117,17 +119,24 @@ const appendChild = (parent, child) => {
   }
 };
 
-const transpileJSX = (type:string,props,...children:Array<HTMLElement>) => {
+export const transpileJSX = (type,props,...children:Array<HTMLElement>) => {
   console.log(type,props,children);
-  
-  let elem = document.createElement(type);
+  console.log(typeof(type)); 
+  let elem:any;
+  if (typeof type === 'function'){
+    elem = new type(props,children);
+    return elem.render();
+  } else if (typeof type === 'string'){
+    elem = document.createElement(type);
+  }
+
   // add props
   if (props){
     for (let key in props){
       if (key.substring(0,2) !== "on"){
         elem.setAttribute(key,props[key]);
       } else {  
-        elem.addEventListener(key.substring(2),props[key]);
+        elem.addEventListener(key.substring(2).toLowerCase(),props[key]);  --> onSomeEventHandlerX should be lower case
       }
     }
   }
@@ -136,4 +145,6 @@ const transpileJSX = (type:string,props,...children:Array<HTMLElement>) => {
   appendChild(elem,children);
   return elem;
 }
+
+export const jsx = transpileJSX;
 ```

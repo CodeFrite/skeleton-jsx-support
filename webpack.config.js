@@ -1,11 +1,12 @@
-const path = require('path');
+const path  = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const { transpileJSX } = require('./src/jsx-pragma');
 
 module.exports = {
   entry: './index.tsx',
-  mode: "development",
-  devtool: "inline-source-map",
+  mode: 'development',
+  devtool: 'inline-source-map',
   module: {
     rules: [
       {
@@ -16,18 +17,14 @@ module.exports = {
             loader: 'babel-loader',
             options: {
               presets: [
+                '@babel/preset-typescript',
                 '@babel/preset-env',
-              ],
-              plugins: [
-                '@babel/plugin-transform-react-jsx',
-              ],
+                '@babel/preset-react'
+              ]
             },
-          },
-          {
-            loader: 'ts-loader',
-          },
+          }
         ],
-      },
+      }
     ],
   },
   resolve: {

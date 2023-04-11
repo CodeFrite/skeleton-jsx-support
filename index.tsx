@@ -1,3 +1,5 @@
+import LabeledButton from "./src/LabeledButton";
+
 /** @jsx transpileJSX */
 const add = (parent, child) => {
   parent.appendChild(child?.nodeType ? child : document.createTextNode(child));
@@ -13,8 +15,15 @@ const appendChild = (parent, child) => {
 
 const transpileJSX = (type:string,props,...children:Array<HTMLElement>) => {
   console.log(type,props,children);
-  
-  let elem = document.createElement(type);
+  console.log(typeof(type));
+  let elem:any;
+  if (typeof(type)==='function'){
+    elem = new LabeledButton(props);
+    return elem.render();
+  } else {
+    elem = document.createElement(type);
+  }
+
   // add props
   if (props){
     for (let key in props){
@@ -45,3 +54,6 @@ let article=<div id="Article">
   <a href="https://www.google.com"></a>
 </div>
 document.body.appendChild(article);
+
+let lbutton=<LabeledButton id="button1" label="Click Me" onClick={e => console.log("clicked")}/>;
+document.body.appendChild(lbutton);
